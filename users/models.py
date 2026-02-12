@@ -3,8 +3,14 @@ from django.db import models
 from django.conf import settings
 
 class UserManager(BaseUserManager):
-    """Кастомный менеджер, использующий email вместо username"""
+    """
+    Кастомный менеджер пользователей, работающий с email как с уникальным идентификатором.
+    Используется моделью :model:`users.User`.
+    """
     def create_user(self, email, password=None, **extra_fields):
+        """
+        Создаёт и сохраняет обычного пользователя с указанным email и паролем.
+        """
         if not email:
             raise ValueError('Email обязателен')
         email = self.normalize_email(email)
@@ -14,6 +20,9 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
+        """
+        Создаёт и сохраняет суперпользователя.
+        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -26,16 +35,30 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    username = None  # убираем username
+    """
+    Кастомная модель пользователя.
+
+    **Поля**
+    * ``email`` — уникальный email, используется для входа.
+    * ``phone`` — номер телефона (необязательно).
+    * ``city`` — город проживания.
+    * ``avatar`` — аватар пользователя.
+
+    Связанные модели:
+    * :model:`users.Payment`
+    * :model:`materials.Course` (через поле `owner`)
+    * :model:`materials.Lesson` (через поле `owner`)
+    """
+    username = None
     email = models.EmailField(unique=True, verbose_name='Email')
     phone = models.CharField(max_length=35, blank=True, null=True, verbose_name='Телефон')
     city = models.CharField(max_length=100, blank=True, null=True, verbose_name='Город')
     avatar = models.ImageField(upload_to='users/avatars/', blank=True, null=True, verbose_name='Аватар')
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []  # никаких дополнительных обязательных полей
+    REQUIRED_FIELDS = []
 
-    objects = UserManager()  # 👈 переопределяем менеджер
+    objects = UserManager()
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -46,7 +69,20 @@ class User(AbstractUser):
 
 
 class Payment(models.Model):
-    # ... (ваша модель Payment остаётся без изменений) ...
+    """
+    Модель платежа.
+
+    **Поля**
+    * ``user`` — ссылка на :model:`users.User`.
+    * ``payment_date`` — дата и время оплаты.
+    * ``course`` — оплаченный курс (:model:`materials.Course`), может быть NULL.
+    * ``lesson`` — оплаченный урок (:model:`materials.Lesson`), может быть NULL.
+    * ``amount`` — сумма платежа.
+    * ``payment_method`` — способ оплаты (cash/transfer).
+
+    **Ограничения**
+    * Хотя бы одно из полей ``course`` или ``lesson`` должно быть заполнено.
+    """
     PAYMENT_METHOD_CHOICES = [
         ('cash', 'Наличные'),
         ('transfer', 'Перевод на счет'),
@@ -76,10 +112,10 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма оплаты')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name='Способ оплаты')
 
-    def __str__(self):
-        return f'{self.user} - {self.payment_date} - {self.amount}'
-
     class Meta:
         verbose_name = 'Платеж'
         verbose_name_plural = 'Платежи'
         ordering = ['-payment_date']
+
+    def __str__(self):
+        return f'{self.user} - {self.payment_date} - {self.amount}'

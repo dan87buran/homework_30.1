@@ -4,9 +4,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    path('admin/doc/', include('django.contrib.admindocs.urls')),  # обязательно до /admin/
     path('admin/', admin.site.urls),
     path('api/', include('materials.urls')),
-    path('api/', include('users.urls')),   # важно: добавить эту строку
+    path('api/', include('users.urls')),
 ]
 
 if settings.DEBUG:

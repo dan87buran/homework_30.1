@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 
+
 class Course(models.Model):
     """
     Модель курса.
@@ -14,6 +15,7 @@ class Course(models.Model):
     Связанные модели:
     * :model:`materials.Lesson` (через related_name='lessons')
     """
+    objects = None
     title = models.CharField(max_length=200, verbose_name='Название')
     preview = models.ImageField(upload_to='courses/previews/', blank=True, null=True, verbose_name='Превью')
     description = models.TextField(verbose_name='Описание')
@@ -45,6 +47,7 @@ class Lesson(models.Model):
     * ``course`` — курс, к которому принадлежит урок (:model:`materials.Course`).
     * ``owner`` — владелец урока (:model:`users.User`).
     """
+    objects = None
     title = models.CharField(max_length=200, verbose_name='Название')
     description = models.TextField(verbose_name='Описание')
     preview = models.ImageField(upload_to='lessons/previews/', blank=True, null=True, verbose_name='Превью')
@@ -64,3 +67,25 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+
+class Subscription(models.Model):
+    objects = None
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscriptions'
+    )
+    course = models.ForeignKey(
+        'Course',
+        on_delete=models.CASCADE,
+        related_name='subscriptions'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'course')   # чтобы не было дублей
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+    def __str__(self):
+        return f'{self.user.email} -> {self.course.title}'

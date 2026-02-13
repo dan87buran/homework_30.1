@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
+
+
 class IsModeratorOrReadOnly(BasePermission):
     """
     - Для небезопасных методов (POST, PUT, PATCH, DELETE) доступ разрешён **только модераторам**.
@@ -22,4 +24,9 @@ class IsOwnerOrModerator(BasePermission):
             return True
         if request.user.groups.filter(name='Модераторы').exists():
             return True
+        return obj.owner == request.user
+
+class IsOwner(BasePermission):
+    """Разрешение только для владельца объекта."""
+    def has_object_permission(self, request, view, obj):
         return obj.owner == request.user

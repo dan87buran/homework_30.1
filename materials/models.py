@@ -89,3 +89,26 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f'{self.user.email} -> {self.course.title}'
+
+class Payment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Ожидает'),
+        ('paid', 'Оплачен'),
+        ('canceled', 'Отменён'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Пользователь')
+    course = models.ForeignKey('Course', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Курс')
+    lesson = models.ForeignKey('Lesson', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Урок')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Сумма')
+    session_id = models.CharField(max_length=255, verbose_name='ID сессии Stripe', blank=True, null=True)
+    payment_url = models.URLField(max_length=500, verbose_name='Ссылка на оплату', blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='Статус')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+    def __str__(self):
+        return f'{self.user} - {self.amount}'
+
+    class Meta:
+        verbose_name = 'Платёж'
+        verbose_name_plural = 'Платежи'

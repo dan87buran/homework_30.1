@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Course, Lesson
 from .validators import validate_youtube_link
 from .models import Course, Subscription
+from .models import Payment
 
 class LessonSerializer(serializers.ModelSerializer):
     """
@@ -54,3 +55,9 @@ class CourseSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return Subscription.objects.filter(user=request.user, course=obj).exists()
         return False
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = '__all__'
+        read_only_fields = ('user', 'session_id', 'payment_url', 'status', 'created_at')

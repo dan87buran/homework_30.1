@@ -24,10 +24,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admindocs',          # для генерации документации
+    'django.contrib.admindocs',
     'rest_framework',
-    'rest_framework_simplejwt',
+    #'rest_framework_simplejwt',
     'django_filters',
+    'drf_spectacular',
     'users',
     'materials',
 ]
@@ -45,6 +46,10 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
     ),
+
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
+
 }
 
 
@@ -110,6 +115,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_...')
 
 AUTH_USER_MODEL = 'users.User'
 

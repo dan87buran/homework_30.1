@@ -8,6 +8,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 # Создаем экземпляр приложения Celery
 app = Celery('config')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
 
 # Загружаем настройки из переменных окружения или используем значения по умолчанию
 REDIS_HOST = config('REDIS_HOST', default='localhost')

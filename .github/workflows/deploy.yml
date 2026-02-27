@@ -38,9 +38,9 @@ jobs:
 
       - name: Run tests
         env:
-          DB_NAME: test_db
-          DB_USER: test_user
-          DB_PASSWORD: test_password
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
           DB_HOST: localhost
           DB_PORT: 5432
           SECRET_KEY: test-key
@@ -76,20 +76,15 @@ jobs:
           ssh $USER@$HOST "mkdir -p /home/$USER/lms"
           rsync -avz --delete --exclude '.env' --exclude '.git' --exclude '.github' --exclude '__pycache__' --exclude '*.pyc' ./ $USER@$HOST:/home/$USER/lms/
           ssh $USER@$HOST << 'EOF'
-            cd /home/$USER/lms
-            # Создаём .env из переменных окружения (переданных как аргументы)
-            echo "DB_NAME=$DB_NAME" > .env
-            echo "DB_USER=$DB_USER" >> .env
-            echo "DB_PASSWORD=$DB_PASSWORD" >> .env
-            echo "DB_HOST=$DB_HOST" >> .env
-            echo "DB_PORT=$DB_PORT" >> .env
-            echo "SECRET_KEY=$SECRET_KEY" >> .env
-            echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> .env
-            echo "POSTGRES_DB=$DB_NAME" >> .env
-            echo "POSTGRES_USER=$DB_USER" >> .env
-            echo "POSTGRES_PASSWORD=$DB_PASSWORD" >> .env
-            echo "POSTGRES_HOST=$DB_HOST" >> .env
-            echo "POSTGRES_PORT=$DB_PORT" >> .env
-            docker-compose down
-            docker-compose up -d --build
+          cd /home/$USER/lms
+          # Создаём .env с правильными именами переменных
+          echo "POSTGRES_DB=$DB_NAME" > .env
+          echo "POSTGRES_USER=$DB_USER" >> .env
+          echo "POSTGRES_PASSWORD=$DB_PASSWORD" >> .env
+          echo "DB_HOST=$DB_HOST" >> .env
+          echo "DB_PORT=$DB_PORT" >> .env
+          echo "SECRET_KEY=$SECRET_KEY" >> .env
+          echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> .env
+          docker-compose down
+          docker-compose up -d --build
           EOF
